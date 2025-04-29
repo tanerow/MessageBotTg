@@ -6,7 +6,7 @@ client = TelegramClient('my_session', api_id, api_hash)
 
 keywords = ['монтаж', 'монтажер', 'монтажёр', 'екб', 'Екатеринбург', 'Екб', 'магнитогорск', 'мгн']
 excluded_words = ['помогу', 'ищуработу', 'ютубшортс', 'рилс', 'вертикальные', 'шортсы', 'рилсы']
-target_chat_id = -123456789
+target_chat_id = -4734945370
 
 @client.on(events.NewMessage)
 async def handler(event):
