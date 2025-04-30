@@ -14,7 +14,7 @@ client = TelegramClient('my_session', api_id, api_hash)
 async def handler(event):
     message_text = event.raw_text.lower()
     if any(word in message_text for word in keywords) and not any(exclude in message_text for exclude in exclude_words):
-        await client.send_message(target_chat_id, f'Сообщение из {event.chat.title}:
+        await client.send_message(target_chat_id, f'Сообщение из {event.chat.title}:')
 
 {event.raw_text}')
 
