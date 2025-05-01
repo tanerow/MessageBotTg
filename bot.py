@@ -1,48 +1,43 @@
 from telethon import TelegramClient, events
-from telethon.tl.types import PeerChannel, PeerChat
 import logging
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 
-api_id = 23246373  # Ваш api_id
-api_hash = 'daa39e9d5b1bc1261b0c3e27853205fc'  # Ваш api_hash
+api_id = 23246373
+api_hash = 'daa39e9d5b1bc1261b0c3e27853205fc'
 client = TelegramClient('my_session', api_id, api_hash)
 
-# Ключевые слова и исключения
 keywords = ['монтаж', 'монтажер', 'монтажёр', 'екб', 'екатеринбург', 'магнитогорск', 'мгн']
 excluded_words = ['помогу', 'ищуработу', 'ютубшортс', 'рилс', 'вертикальные', 'шортсы', 'рилсы']
 
-# Чат для пересылки сообщений
-target_chat_id = -4734945370  # Замените на свой ID
+target_chat_id = -4734945370
+ignored_chat_ids = {target_chat_id}
 
 @client.on(events.NewMessage)
 async def handler(event):
     try:
-        # Получаем ID чата, откуда пришло сообщение
-        sender = event.message.to_id
-        sender_id = None
+        chat = await event.get_chat()
+        chat_id = event.chat_id
 
-        if isinstance(sender, PeerChannel):
-            sender_id = -sender.channel_id  # каналы/супергруппы: отрицательный ID
-        elif isinstance(sender, PeerChat):
-            sender_id = sender.chat_id  # обычные чаты: положительный ID
-
-        # Игнорируем сообщения из целевого чата, куда мы отправляем
-        if sender_id == target_chat_id:
+        # Пропускаем сообщения из чата-получателя
+        if chat_id in ignored_chat_ids:
             return
 
-        # Обработка текста
         text = event.raw_text.lower()
+
+        # Пропускаем сообщения, уже помеченные как пересланные ботом
+        if text.startswith("📥 сообщение из") or text.startswith("📥 сообщение от"):
+            return
+
         if any(word in text for word in keywords) and not any(bad in text for bad in excluded_words):
+            title = getattr(chat, "title", "личных сообщений")
             await client.send_message(
                 target_chat_id,
-                f'📥 Сообщение из {event.chat.title or "неизвестного чата"}:\n\n{text}'
+                f'📥 Сообщение из {title}:\n\n{text}'
             )
-            logging.info(f"Сообщение переслано из {event.chat.title}")
+            logging.info(f"Переслано сообщение из {title}")
     except Exception as e:
         logging.error(f"Ошибка при обработке сообщения: {e}")
 
-# Запуск клиента
 client.start()
 client.run_until_disconnected()
